@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Caller Feedback Scorecard</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; 
+            background: #f5f5f5;
+            line-height: 1.6;
+        }
+        .container { max-width: 700px; margin: 0 auto; padding: 20px; }
+        
+        .header { 
+            text-align: center; 
+            margin-bottom: 30px; 
+            background: white; 
+            padding: 20px; 
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        .header h1 { font-size: 24px; color: #000; margin-bottom: 8px; }
+        .header p { font-size: 14px; color: #666; }
+        
+        .section { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 16px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+        .section-title { 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: #000; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            margin-bottom: 12px; 
+            padding-bottom: 8px; 
+            border-bottom: 2px solid #333;
+        }
+        
+        .input-group { margin-bottom: 14px; }
+        .input-label { 
+            font-size: 13px; 
+            font-weight: 600; 
+            color: #333; 
+            margin-bottom: 6px; 
+            display: block;
+        }
+        
+        textarea, input[type="text"] { 
+            width: 100%; 
+            padding: 12px; 
+            border: 1px solid #ddd; 
+            border-radius: 6px; 
+            font-family: inherit; 
+            font-size: 13px;
+            resize: vertical;
+        }
+        textarea { min-height: 80px; }
+        textarea:focus, input:focus { 
+            outline: none; 
+            border-color: #007bff; 
+            background: #f0f7ff;
+        }
+        
+        .example { 
+            background: #f5f5f5; 
+            border-left: 3px solid #007bff; 
+            padding: 10px 12px; 
+            border-radius: 4px; 
+            margin-bottom: 10px; 
+            font-size: 12px; 
+            color: #555; 
+            line-height: 1.5;
+        }
+        .example strong { display: block; margin-bottom: 4px; color: #000; }
+        
+        .button-group { display: flex; gap: 10px; margin-top: 20px; }
+        .btn { 
+            flex: 1; 
+            padding: 12px; 
+            border: none; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .btn-primary { background: #007bff; color: white; }
+        .btn-primary:hover { background: #0056b3; }
+        .btn-secondary { background: #f0f0f0; color: #333; border: 1px solid #ddd; }
+        .btn-secondary:hover { background: #e8e8e8; }
+        
+        .results { display: none; }
+        .results.show { display: block; }
+        
+        .result-header { 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+            color: white; 
+            border-radius: 8px; 
+            padding: 20px; 
+            margin-bottom: 16px;
+        }
+        .result-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            margin-bottom: 12px;
+        }
+        .result-row:last-child { margin-bottom: 0; }
+        .metric-label { 
+            font-size: 11px; 
+            text-transform: uppercase; 
+            letter-spacing: 0.5px; 
+            opacity: 0.9;
+        }
+        .metric-value { 
+            font-size: 18px; 
+            font-weight: 700; 
+            margin-top: 4px;
+        }
+        
+        .card { 
+            background: white; 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            padding: 16px; 
+            margin-bottom: 16px;
+        }
+        
+        .issues-list { 
+            list-style: none; 
+            padding: 0;
+        }
+        .issues-list li { 
+            padding: 8px 0; 
+            padding-left: 24px; 
+            position: relative; 
+            font-size: 14px; 
+            color: #333; 
+            line-height: 1.6;
+        }
+        .issues-list li:before { 
+            content: "❌"; 
+            position: absolute; 
+            left: 0;
+        }
+        
+        .pointers { }
+        .pointer-item { 
+            padding: 10px 0; 
+            font-size: 14px; 
+            line-height: 1.6; 
+            color: #333;
+        }
+        .pointer-item strong { 
+            display: block; 
+            color: #007bff; 
+            margin-bottom: 4px;
+        }
+        
+        .dimension-row { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 12px; 
+            background: #f9f9f9; 
+            border: 1px solid #eee; 
+            border-radius: 6px; 
+            margin-bottom: 10px;
+        }
+        .dimension-name { 
+            font-size: 14px; 
+            font-weight: 500; 
+            color: #000;
+        }
+        .dimension-score { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px;
+        }
+        
+        .score-badge { 
+            padding: 6px 12px; 
+            border-radius: 4px; 
+            font-weight: 600; 
+            font-size: 13px; 
+            min-width: 50px; 
+            text-align: center;
+        }
+        .score-strong { background: #d4edda; color: #155724; }
+        .score-good { background: #fff3cd; color: #856404; }
+        .score-fair { background: #cfe2ff; color: #084298; }
+        .score-weak { background: #f8d7da; color: #721c24; }
+        
+        .score-label { font-size: 12px; color: #666; }
+        
+        .action-buttons { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 20px;
+        }
+        .btn-small { 
+            flex: 1; 
+            padding: 10px; 
+            border: 1px solid #ddd; 
+            background: white; 
+            border-radius: 6px; 
+            cursor: pointer; 
+            font-size: 12px;
+        }
+        .btn-small:hover { background: #f9f9f9; }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>📞 Caller Feedback Scorecard</h1>
+        <p>Evaluate call performance across 6 dimensions</p>
+    </div>
+
+    <!-- INPUT FORM -->
+    <div class="section">
+        <div class="section-title">👤 Caller Info</div>
+        <div class="input-group">
+            <label class="input-label">Caller name</label>
+            <input type="text" id="callerName" placeholder="E.g., Ganesh, Priya, Rajesh...">
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">📍 Section 1: Opening</div>
+        <div class="input-label">How was the opening? What could improve?</div>
+        <div class="example">
+            <strong>Example:</strong>
+            Opening was weak. Didn't hook the prospect. Jumped straight to product instead of understanding needs first.
+        </div>
+        <div class="input-group">
+            <textarea id="opening" placeholder="Describe the opening..."></textarea>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">😊 Section 2: Sentiment & Storytelling</div>
+        <div class="input-label">Overall tone, storytelling, and connection with prospect?</div>
+        <div class="example">
+            <strong>Example:</strong>
+            Too casual, no aggression. Storytelling was missing — didn't explain why OPD matters or how we're different.
+        </div>
+        <div class="input-group">
+            <textarea id="sentiment" placeholder="Describe sentiment and storytelling..."></textarea>
+        </div>
+    </div>
+
+    <div class="section">
+        <div class="section-title">🎯 Section 3: Probing, Pricing, Rebuttal</div>
+        <div class="input-label">How did they probe? Handle pricing? Address objections?</div>
+        <div class="example">
+            <strong>Example:</strong>
+            Probing was weak — didn't ask about profession. Pricing thrown too early. No rebuttal handling.
+        </div>
+        <div class="input-group">
+            <textarea id="technique" placeholder="Describe probing, pricing, and rebuttal handling..."></textarea>
+        </div>
+    </div>
+
+    <div class="button-group">
+        <button class="btn btn-primary" onclick="scoreFeedback()">Score This Call</button>
+        <button class="btn btn-secondary" onclick="clearForm()">Clear</button>
+    </div>
+
+    <!-- RESULTS -->
+    <div class="results" id="results">
+        <div class="result-header">
+            <div class="result-row">
+                <div>
+                    <div class="metric-label">Caller</div>
+                    <div class="metric-value" id="resultCallerName">Caller</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="metric-label">Call Sentiment</div>
+                    <div class="metric-value" id="resultSentiment">Average</div>
+                </div>
+            </div>
+            <div class="result-row">
+                <div>
+                    <div class="metric-label">Overall Score</div>
+                    <div class="metric-value" id="resultOverall">5/10</div>
+                </div>
+                <div style="text-align: right;">
+                    <div class="metric-label">Status</div>
+                    <div class="metric-value" style="color: #ffd700;" id="resultStatus">⚠️ Avg</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">⚠️ What Went Wrong</div>
+            <ul class="issues-list" id="issuesList"></ul>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📌 Key Pointers for Improvement</div>
+            <div class="pointers" id="pointers"></div>
+        </div>
+
+        <div class="card">
+            <div class="section-title">📊 Dimension Scores</div>
+            <div id="scoreContainer"></div>
+        </div>
+
+        <div class="action-buttons">
+            <button class="btn-small" onclick="alert('📸 Use your browser screenshot tool to capture the results!')">📸 Screenshot</button>
+            <button class="btn-small" onclick="newFeedback()">➕ New Feedback</button>
+        </div>
+    </div>
+</div>
+
+<script>
+function scoreFeedback() {
+    const callerName = document.getElementById('callerName').value.trim() || 'Caller';
+    const opening = document.getElementById('opening').value.trim();
+    const sentiment = document.getElementById('sentiment').value.trim();
+    const technique = document.getElementById('technique').value.trim();
+    
+    if (!opening && !sentiment && !technique) {
+        alert('⚠️ Please fill at least one feedback section');
+        return;
+    }
+
+    const scores = {
+        opening: calculateScore(opening, 'opening'),
+        storytelling: calculateScore(sentiment, 'storytelling'),
+        probing: calculateScore(technique, 'probing'),
+        pricing: calculateScore(technique, 'pricing'),
+        rebuttal: calculateScore(technique, 'rebuttal'),
+        sentiment: calculateScore(sentiment, 'sentiment')
+    };
+
+    const avgScore = Object.values(scores).reduce((a, b) => a + b, 0) / 6;
+    const sentiment_label = getSentiment(avgScore);
+
+    document.getElementById('resultCallerName').textContent = callerName;
+    document.getElementById('resultSentiment').textContent = sentiment_label;
+    document.getElementById('resultOverall').textContent = Math.round(avgScore) + '/10';
+    
+    if (avgScore >= 8) document.getElementById('resultStatus').innerHTML = '✅ Strong';
+    else if (avgScore >= 6) document.getElementById('resultStatus').innerHTML = '✔️ Good';
+    else if (avgScore >= 4) document.getElementById('resultStatus').innerHTML = '⚠️ Average';
+    else document.getElementById('resultStatus').innerHTML = '❌ Poor';
+
+    document.getElementById('issuesList').innerHTML = getIssues(opening, sentiment, technique);
+    document.getElementById('pointers').innerHTML = getPointers(scores);
+    document.getElementById('scoreContainer').innerHTML = getScoreRows(scores);
+    
+    document.getElementById('results').classList.add('show');
+    document.getElementById('results').scrollIntoView({ behavior: 'smooth' });
+}
+
+function calculateScore(text, dimension) {
+    const lowerText = text.toLowerCase();
+    const keywords = {
+        opening: ['opening', 'started', 'intro', 'hook'],
+        storytelling: ['story', 'narrative', 'explain', 'engaging'],
+        probing: ['probe', 'question', 'ask', 'discover'],
+        pricing: ['price', 'pricing', 'cost', 'negotiate'],
+        rebuttal: ['rebuttal', 'objection', 'confident', 'handle'],
+        sentiment: ['tone', 'casual', 'aggress', 'professional']
+    };
+
+    let score = 3;
+    for (let kw of (keywords[dimension] || [])) {
+        if (lowerText.includes(kw)) {
+            if (lowerText.includes('excellent') || lowerText.includes('great') || lowerText.includes('strong')) score = 8;
+            else if (lowerText.includes('weak') || lowerText.includes('poor') || lowerText.includes('bad')) score = 2;
+            else if (lowerText.includes('good') || lowerText.includes('solid')) score = 7;
+            else score = 4;
+            break;
+        }
+    }
+    return Math.min(10, Math.max(1, score));
+}
+
+function getSentiment(avg) {
+    if (avg >= 8) return 'Excellent';
+    if (avg >= 6.5) return 'Good';
+    if (avg >= 4.5) return 'Average';
+    return 'Poor';
+}
+
+function getIssues(opening, sentiment, technique) {
+    const lowerText = (opening + ' ' + sentiment + ' ' + technique).toLowerCase();
+    const issues = [];
+    
+    if (lowerText.includes('opening') && lowerText.includes('weak')) issues.push('<li>Weak opening — didn\'t hook prospect</li>');
+    if (lowerText.includes('pitched') && lowerText.includes('early')) issues.push('<li>Pitched too early without building value</li>');
+    if (lowerText.includes('probing') && lowerText.includes('weak')) issues.push('<li>Weak probing — missed discovery</li>');
+    if (lowerText.includes('storytelling') && lowerText.includes('missing')) issues.push('<li>Storytelling missing — no narrative</li>');
+    if (lowerText.includes('casual')) issues.push('<li>Too casual tone — no urgency</li>');
+    if (lowerText.includes('callback')) issues.push('<li>Customer asked callback — value not established</li>');
+    if (lowerText.includes('poor') || lowerText.includes('bad')) issues.push('<li>Poor execution overall</li>');
+    if (lowerText.includes('explain')) issues.push('<li>Poor explanation of product/features</li>');
+    
+    if (issues.length === 0) issues.push('<li>Overall execution needs refinement</li>');
+    
+    return issues.join('');
+}
+
+function getPointers(scores) {
+    const pointers = [];
+    
+    if (scores.opening <= 3) pointers.push('<div class="pointer-item"><strong>1. Opening needs scripting</strong> Start with the problem, not the pitch. Hook first.</div>');
+    if (scores.probing <= 3) pointers.push('<div class="pointer-item"><strong>2. Probe before pitch</strong> Ask about profession, needs, current setup. Understand before selling.</div>');
+    if (scores.storytelling <= 3) pointers.push('<div class="pointer-item"><strong>3. Build value narrative</strong> Connect features to benefits. Explain the "why" behind each product.</div>');
+    if (scores.pricing <= 3) pointers.push('<div class="pointer-item"><strong>4. Hold pricing for later</strong> Price kills early conversations. Discuss after value is clear.</div>');
+    if (scores.rebuttal <= 3) pointers.push('<div class="pointer-item"><strong>5. Add confidence & urgency</strong> Create urgency: "Limited slots," "Lock in today."</div>');
+    if (scores.sentiment <= 3) pointers.push('<div class="pointer-item"><strong>6. Improve tone & presence</strong> Move from casual to assertive. Be professional and confident.</div>');
+    
+    if (pointers.length === 0) pointers.push('<div class="pointer-item"><strong>Overall</strong> Keep momentum on strong dimensions. Focus on consistency across all areas.</div>');
+    
+    return pointers.join('');
+}
+
+function getScoreRows(scores) {
+    const dimensions = [
+        { key: 'opening', label: 'Opening' },
+        { key: 'storytelling', label: 'Storytelling' },
+        { key: 'probing', label: 'Probing' },
+        { key: 'pricing', label: 'Pricing Tackle' },
+        { key: 'rebuttal', label: 'Rebuttal Ranking' },
+        { key: 'sentiment', label: 'Sentiment' }
+    ];
+
+    let html = '';
+    for (let d of dimensions) {
+        const score = scores[d.key];
+        const badge = score >= 8 ? 'score-strong' : score >= 6 ? 'score-good' : score >= 4 ? 'score-fair' : 'score-weak';
+        const label = score >= 8 ? 'Strong' : score >= 6 ? 'Good' : score >= 4 ? 'Fair' : 'Needs work';
+        
+        html += `
+            <div class="dimension-row">
+                <div class="dimension-name">${d.label}</div>
+                <div class="dimension-score">
+                    <div class="score-badge ${badge}">${score}/10</div>
+                    <div class="score-label">${label}</div>
+                </div>
+            </div>
+        `;
+    }
+    return html;
+}
+
+function clearForm() {
+    document.getElementById('callerName').value = '';
+    document.getElementById('opening').value = '';
+    document.getElementById('sentiment').value = '';
+    document.getElementById('technique').value = '';
+    document.getElementById('results').classList.remove('show');
+}
+
+function newFeedback() {
+    clearForm();
+    window.scrollTo(0, 0);
+}
+</script>
+</body>
+</html>
